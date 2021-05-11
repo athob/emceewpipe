@@ -38,7 +38,7 @@ def run_mcmc(pool):
 
 
 def get_flat_samples(sampler):
-    tau = sampler.get_autocorr_time()
+    tau = sampler.get_autocorr_time(quiet=True)  # TODO: quiet should be avoided
     print(tau)
     flat_samples = sampler.get_chain(discard=int(np.ceil(np.max(2.5 * tau))),
                                      thin=int(np.ceil(np.max(tau / 2.5))),

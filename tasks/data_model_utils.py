@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import wpipe as wp
 
-CHARA_LENGTHS = [1, 1]
+CHARA_LENGTHS = [0.1, 0.1]
 DATA_X = DATA_Y = DATA_YERR = None
 
 
