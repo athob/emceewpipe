@@ -156,10 +156,10 @@ def model_fun(*args):
     if make_new_model(*args):
         return comput_model(*args)
     else:
-        try:
-            return interp_model(*args)
-        except Exception:
-            return comput_model(*args)
+        # try:
+        return interp_model(*args)
+        # except Exception:
+        #     return comput_model(*args)
 
 
 def log_likelihood(theta):
