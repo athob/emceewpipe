@@ -1,6 +1,12 @@
 #!/usr/bin/env python
-import wpipe as wp
+import datetime
 import numpy as np
+import wpipe as wp
+
+def convert_walltime(walltime):  # TODO: includes days?
+    return datetime.timedelta(**dict(zip(['hours', 'minutes', 'seconds'], map(float,walltime.split(':')))))
+
+DEFAULT_WALLTIME_DICT = {'': None, 'pbs': convert_walltime(wp.scheduler.PbsScheduler.DEFAULT_WALLTIME)}
 
 
 class EventPool:
@@ -9,12 +15,16 @@ class EventPool:
         d = repr(len(repr(pool_length)))
         self._events = list(map(lambda n: job.child_event(*args, tag=('PoolEvent#%0' + d + 'd') % n,
                                                           **kwargs), range(pool_length)))
+        self._empty_event_jobs = list(map(lambda event: len(event.fired_jobs)==0, self._events))
+        self._submission_type = kwargs.get('options', {'submission_type': ''})['submission_type']
+        self._walltime = kwargs.get('options', {'walltime': DEFAULT_WALLTIME_DICT[self._submission_type]})['walltime']
         self._initialize_events()
 
     def _initialize_events(self):
         for event in self._events:
             event.options['new_log_prob'] = True
             event.options['new_theta'] = False
+            event.options['current_dpid'] = None
 
     def fire(self):
         for event in self._events:
@@ -31,8 +41,23 @@ class EventPool:
         while m < struct_length or pool_indexes:
             # wp.ThisJob.logprint('\nSTRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
             # looping around the pool to find available event
-            # TODO: add management to this loop to restart forced closed events
             while not(self._events[n].options['new_log_prob']) if (n in pool_indexes.keys()) else True:
+                # TODO: add management to this loop to restart expired events
+                if self._walltime is not None:
+                    _event = self._events[n]
+                    _jobs = _event.fired_jobs
+                    if len(_jobs) if self._empty_event_jobs[n] else True:
+                        self._empty_event_jobs[n] = False
+                        _job = _jobs[-1]
+                        if _job.endtime is None:
+                            _starttime = _job.starttime
+                            if _starttime is not None:
+                                if datetime.datetime.utcnow()-_starttime > self._walltime:
+                                    _current_dpid = _event.options['current_dpid']
+                                    if _current_dpid is not None:
+                                        wp.DataProduct(int(_current_dpid)).delete()
+                                    _job.expire()
+                                    _event.fire()
                 n += 1
                 n %= pool_length
             self._events[n].options['new_log_prob'] = False
