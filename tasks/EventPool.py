@@ -3,10 +3,13 @@ import datetime
 import numpy as np
 import wpipe as wp
 
-def convert_walltime(walltime):  # TODO: includes days?
-    return datetime.timedelta(**dict(zip(['hours', 'minutes', 'seconds'], map(float,walltime.split(':')))))
 
-DEFAULT_WALLTIME_DICT = {'': None, 'pbs': convert_walltime(wp.scheduler.PbsScheduler.DEFAULT_WALLTIME)}
+def convert_walltime(walltime):  # TODO: includes days?
+    if walltime is not None:
+        return datetime.timedelta(**dict(zip(['hours', 'minutes', 'seconds'], map(float, walltime.split(':')))))
+
+
+DEFAULT_WALLTIME_DICT = {'': None, 'pbs': wp.scheduler.PbsScheduler.DEFAULT_WALLTIME}
 
 
 class EventPool:
@@ -15,9 +18,12 @@ class EventPool:
         d = repr(len(repr(pool_length)))
         self._events = list(map(lambda n: job.child_event(*args, tag=('PoolEvent#%0' + d + 'd') % n,
                                                           **kwargs), range(pool_length)))
-        self._empty_event_jobs = list(map(lambda event: len(event.fired_jobs)==0, self._events))
-        self._submission_type = kwargs.get('options', {'submission_type': ''})['submission_type']
-        self._walltime = kwargs.get('options', {'walltime': DEFAULT_WALLTIME_DICT[self._submission_type]})['walltime']
+        self._empty_event_jobs = list(map(lambda event: len(event.fired_jobs) == 0, self._events))
+        _options = kwargs.get('options', {'submission_type': ''})
+        self._submission_type = kwargs['options'].get('submission_type', '')
+        if 'walltime' not in _options.keys():
+            _options['walltime'] = DEFAULT_WALLTIME_DICT[self._submission_type]
+        self._walltime = convert_walltime(_options['walltime'])
         self._initialize_events()
 
     def _initialize_events(self):
@@ -41,7 +47,7 @@ class EventPool:
         while m < struct_length or pool_indexes:
             # wp.ThisJob.logprint('\nSTRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
             # looping around the pool to find available event
-            while not(self._events[n].options['new_log_prob']) if (n in pool_indexes.keys()) else True:
+            while not (self._events[n].options['new_log_prob']) if (n in pool_indexes.keys()) else True:
                 # TODO: add management to this loop to restart expired events
                 if self._walltime is not None:
                     _event = self._events[n]
@@ -52,7 +58,7 @@ class EventPool:
                         if _job.endtime is None:
                             _starttime = _job.starttime
                             if _starttime is not None:
-                                if datetime.datetime.utcnow()-_starttime > self._walltime:
+                                if datetime.datetime.utcnow() - _starttime > self._walltime:
                                     _current_dpid = _event.options['current_dpid']
                                     if _current_dpid is not None:
                                         wp.DataProduct(int(_current_dpid)).delete()
