@@ -14,6 +14,7 @@ def register(task):
 
 
 LEN_EVENTPOOL = 16
+WALLTIME = '1:00:00'
 NB_WALKERS = 32
 NB_DIM = 3
 NB_ITERATIONS = 5000
@@ -57,7 +58,7 @@ def save_flat_samples(flat_samples):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     EVENTPOOL = EventPool(wp.ThisJob, LEN_EVENTPOOL, name='start_walker',
-                          options={'submission_type': 'pbs', 'job_time': 5})
+                          options={'submission_type': 'pbs', 'job_time': 5, 'walltime': WALLTIME})
     EVENTPOOL.fire()
     SAMPLER = run_mcmc(EVENTPOOL)
     EVENTPOOL.kill()

@@ -63,6 +63,9 @@ class EventPool:
                                     if _current_dpid is not None:
                                         wp.DataProduct(int(_current_dpid)).delete()
                                     _job.expire()
+                                    _event.options['new_log_prob'] = False
+                                    _event.options['new_theta'] = True
+                                    _event.options['current_dpid'] = None
                                     _event.fire()
                 n += 1
                 n %= pool_length
