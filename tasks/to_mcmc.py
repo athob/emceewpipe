@@ -3,7 +3,6 @@ import os
 import inspect
 import copy
 import time
-import tenacity as tn
 import wpipe as wp
 import numpy as np
 import pandas as pd
@@ -11,6 +10,7 @@ from scipy import linalg, spatial
 
 if __name__ == '__main__':
     import data_model_utils as dmu
+    from ModelCaching import EXISTING_MODELS, update_models
 
 
 def register(task):
@@ -18,41 +18,9 @@ def register(task):
     _temp = task.mask(source='*', name='start_walker', value='*')
 
 
-EXISTING_MODELS = pd.DataFrame()
 EXISTING_VORONOI = None
 
 HYPERBOLIC_PARAM = 0.1
-
-
-def wait_model_dp_ready(model_dp):
-    for retry in tn.Retrying(retry=tn.retry_if_exception_type(KeyError), wait=tn.wait_random()):
-        with retry:
-            while not model_dp.options['ready']:
-                time.sleep(1)
-
-
-def load_models(model_dps):
-    # wp.ThisJob.logprint('\nLOAD_MODELS')
-    if len(model_dps):
-        return pd.concat([pd.read_csv(model_dp.path).set_index(['a0', 'a1'])
-                          for model_dp in model_dps if wait_model_dp_ready(model_dp) is None])
-    else:
-        return pd.DataFrame()
-
-
-def update_models():
-    global EXISTING_MODELS
-    wp.ThisJob.logprint("UPDATING MODELS: current len(EXISTING_MODELS) = %d" % len(EXISTING_MODELS))
-    dp_ids = list(EXISTING_MODELS['dp_id']) if len(EXISTING_MODELS) else []
-    proc_dps = wp.DataProduct.select(wp.si.DataProduct.id.not_in(dp_ids),
-                                     dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
-    # filenames = [proc_dp.filename for proc_dp in proc_dps]
-    # missing = np.array([os.path.splitext(name)[1] == '.csv' for name in filenames])
-    # if len(EXISTING_MODELS):
-    #     missing &= ~np.in1d(filenames, list(EXISTING_MODELS['name']))
-    # EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(np.array(proc_dps)[missing])])
-    EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(proc_dps)])
-    return EXISTING_MODELS
 
 
 def kernel(u):
@@ -90,7 +58,7 @@ def comput_model(*args):
                                              relativepath=wp.ThisJob.config.procpath,
                                              group='proc',
                                              data_type='Model',
-                                             options={'ready': False})
+                                             options={'ready': False, 'readings': 0})
     wp.ThisJob.firing_event.options['current_dpid'] = model_dp.dp_id
     new_model = dmu.model(*args)
     args_tags = ['a%d' % i for i in range(len(args))]

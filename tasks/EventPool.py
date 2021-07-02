@@ -3,6 +3,11 @@ import datetime
 import numpy as np
 import wpipe as wp
 
+try:
+    from ModelCaching import EXISTING_MODELS, update_models
+except ImportError:
+    pass
+
 
 def convert_walltime(walltime):  # TODO: includes days?
     if walltime is not None:

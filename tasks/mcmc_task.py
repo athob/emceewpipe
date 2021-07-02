@@ -13,8 +13,8 @@ def register(task):
     _temp = task.mask(source='*', name='run_mcmc', value='*')
 
 
-LEN_EVENTPOOL = 16
-SUBMISSION_TYPE = 'pbs'
+LEN_EVENTPOOL = 3  # 16
+SUBMISSION_TYPE = None  # 'pbs'
 WALLTIME = '12:00:00'
 NB_WALKERS = 32
 NB_DIM = 3
