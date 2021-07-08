@@ -57,7 +57,10 @@ def get_cache_dp():
 if PARENT_IS_MASTER_CACHE:
     EXISTING_MODELS = pd.DataFrame()
 else:
-    EXISTING_MODELS = read_model_dp(get_cache_dp())
+    try:
+        EXISTING_MODELS = read_model_dp(get_cache_dp())
+    except AttributeError:
+        EXISTING_MODELS = pd.DataFrame()
 
 
 def load_models(model_dps):
