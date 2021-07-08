@@ -13,9 +13,7 @@ def register(task):
     _temp = task.mask(source='*', name='run_mcmc', value='*')
 
 
-LEN_EVENTPOOL = 3  # 16
 SUBMISSION_TYPE = None  # 'pbs'
-WALLTIME = '12:00:00'
 NB_WALKERS = 32
 NB_DIM = 3
 NB_ITERATIONS = 5000
@@ -58,11 +56,16 @@ def save_flat_samples(flat_samples):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    EVENTPOOL = EventPool(wp.ThisJob, LEN_EVENTPOOL, name='start_walker',
+    conf_params = wp.ThisJob.config.parameters
+    MASTER_CACHE = wp.ThisJob.child_event(name='start_cache')
+    MASTER_CACHE.fire()
+    EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), name='start_walker',
                           options={} if SUBMISSION_TYPE is None
-                          else {'submission_type': SUBMISSION_TYPE, 'job_time': 5, 'walltime': WALLTIME})
+                          else {'submission_type': SUBMISSION_TYPE, 'job_time': 5,
+                                'walltime': str(conf_params['walltime'])})
     EVENTPOOL.fire()
     SAMPLER = run_mcmc(EVENTPOOL)
     EVENTPOOL.kill()
+    MASTER_CACHE.options['stop_cache'] = True
     FLAT_SAMPLES = get_flat_samples(SAMPLER)
     save_flat_samples(FLAT_SAMPLES)

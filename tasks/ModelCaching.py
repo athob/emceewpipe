@@ -1,11 +1,14 @@
 #!/usr/bin/env python
+import os
+import sys
 import time
 import tenacity as tn
 import wpipe as wp
 import pandas as pd
 
 
-EXISTING_MODELS = pd.DataFrame()
+PARENT_IS_MASTER_CACHE = os.path.basename(sys.argv[0]) == 'master_cache.py'
+LEN_EVENTPOOL = int(wp.ThisJob.parameters['len_eventpool'])
 
 
 def wait_model_dp_ready(model_dp):
@@ -16,9 +19,42 @@ def wait_model_dp_ready(model_dp):
 
 
 def read_model_dp(model_dp):
-    model = pd.read_csv(model_dp.path).set_index(['a0', 'a1'])
-    model_dp.options['readings'] += 1
+    temp = pd.read_csv(model_dp.path)
+    model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
+    if PARENT_IS_MASTER_CACHE:
+        model_dp.options['cached'] = True
+    else:
+        model_dp.options['readings'] += 1
     return model
+
+
+def create_model_dp(args):
+    model_dp = wp.ThisJob.config.dataproduct(filename=('M' + len(args) * '_%.10e' + '.csv') % args,
+                                             relativepath=wp.ThisJob.config.procpath,
+                                             group='proc',
+                                             data_type='Model',
+                                             options={'ready': False, 'readings': 0, 'cached': False})
+    return model_dp
+
+
+def create_cache_dp():
+    cache_dp = wp.ThisJob.config.dataproduct(filename="Cache.csv",
+                                             relativepath=wp.ThisJob.config.procpath,
+                                             group='proc',
+                                             data_type='Cache',
+                                             options={'ready': False})
+    return cache_dp
+
+
+def get_cache_dp():
+    cache_dp = wp.DataProduct.select(dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Cache')[0]
+    return cache_dp
+
+
+if PARENT_IS_MASTER_CACHE:
+    EXISTING_MODELS = pd.DataFrame()
+else:
+    EXISTING_MODELS = read_model_dp(get_cache_dp())
 
 
 def load_models(model_dps):
@@ -42,6 +78,18 @@ def update_models():
     # EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(np.array(proc_dps)[missing])])
     EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(proc_dps)])
     return EXISTING_MODELS
+
+
+def return_models():
+    global EXISTING_MODELS
+    return EXISTING_MODELS
+
+
+def delete_cached_models():
+    model_dps = wp.DataProduct.select(dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
+    for model_dp in model_dps:
+        if model_dp.options['readings'] == LEN_EVENTPOOL and model_dp.options['cached']:
+            model_dp.delete()
 
 
 # Press the green button in the gutter to run the script.

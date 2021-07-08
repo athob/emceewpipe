@@ -10,7 +10,7 @@ from scipy import linalg, spatial
 
 if __name__ == '__main__':
     import data_model_utils as dmu
-    from ModelCaching import EXISTING_MODELS, update_models
+    from ModelCaching import return_models, update_models, create_model_dp
 
 
 def register(task):
@@ -54,11 +54,7 @@ def make_new_model(*args):
 
 def comput_model(*args):
     wp.ThisJob.logprint('\n\nMAKE NEW MODEL\n\n')
-    model_dp = wp.ThisJob.config.dataproduct(filename=('M' + 2 * '_%.10e' + '.csv') % args,
-                                             relativepath=wp.ThisJob.config.procpath,
-                                             group='proc',
-                                             data_type='Model',
-                                             options={'ready': False, 'readings': 0})
+    model_dp = create_model_dp(args)
     wp.ThisJob.firing_event.options['current_dpid'] = model_dp.dp_id
     new_model = dmu.model(*args)
     args_tags = ['a%d' % i for i in range(len(args))]
@@ -73,9 +69,9 @@ def comput_model(*args):
 
 def interp_model(*args):
     wp.ThisJob.logprint('\n\nINTERPOLATE MODEL\n\n')
-    global EXISTING_MODELS, EXISTING_VORONOI
+    global EXISTING_VORONOI
     # models = EXISTING_MODELS.drop('name', axis=1)
-    models = EXISTING_MODELS.drop('dp_id', axis=1)
+    models = return_models().drop('dp_id', axis=1)
     # points = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
     # wp.ThisJob.logprint('STEP 1')
     EXISTING_VORONOI = spatial.Voronoi(np.array(models.index.to_list()) / dmu.CHARA_LENGTHS, incremental=True)  # TODO
