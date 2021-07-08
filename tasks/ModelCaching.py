@@ -9,7 +9,7 @@ import pandas as pd
 
 PARENT_IS_MASTER_CACHE = os.path.basename(sys.argv[0]) == 'master_cache.py'
 try:
-    LEN_EVENTPOOL = int(wp.ThisJob.parameters['len_eventpool'])
+    LEN_EVENTPOOL = int(wp.ThisJob.config.parameters['len_eventpool'])
 except AttributeError:
     LEN_EVENTPOOL = None
 

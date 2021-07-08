@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import time
 import wpipe as wp
-import numpy as np
-import pandas as pd
-from scipy import linalg, spatial
 
 if __name__ == '__main__':
     from ModelCaching import update_models, create_cache_dp, delete_cached_models
