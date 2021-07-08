@@ -23,11 +23,15 @@ def wait_model_dp_ready(model_dp):
 
 def read_model_dp(model_dp):
     temp = pd.read_csv(model_dp.path)
-    model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
-    if PARENT_IS_MASTER_CACHE:
-        model_dp.options['cached'] = True
+    if not temp.empty:
+        model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
     else:
-        model_dp.options['readings'] += 1
+        model = temp
+    if model_dp.data_type == 'Model':
+        if PARENT_IS_MASTER_CACHE:
+            model_dp.options['cached'] = True
+        else:
+            model_dp.options['readings'] += 1
     return model
 
 
