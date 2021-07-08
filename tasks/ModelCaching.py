@@ -8,7 +8,10 @@ import pandas as pd
 
 
 PARENT_IS_MASTER_CACHE = os.path.basename(sys.argv[0]) == 'master_cache.py'
-LEN_EVENTPOOL = int(wp.ThisJob.parameters['len_eventpool'])
+try:
+    LEN_EVENTPOOL = int(wp.ThisJob.parameters['len_eventpool'])
+except AttributeError:
+    LEN_EVENTPOOL = None
 
 
 def wait_model_dp_ready(model_dp):
