@@ -59,7 +59,7 @@ if PARENT_IS_MASTER_CACHE:
 else:
     try:
         EXISTING_MODELS = read_model_dp(get_cache_dp())
-    except IndexError or AttributeError:
+    except (IndexError, AttributeError):
         EXISTING_MODELS = pd.DataFrame()
 
 
