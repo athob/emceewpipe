@@ -98,7 +98,11 @@ def return_models():
 def delete_cached_models():
     model_dps = wp.DataProduct.select(dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
     for model_dp in model_dps:
-        if model_dp.options['readings'] == LEN_EVENTPOOL and model_dp.options['cached']:
+        try:
+            if wait_model_dp_ready(model_dp) is None:
+                if model_dp.options['readings'] == LEN_EVENTPOOL and model_dp.options['cached']:
+                    model_dp.delete()
+        except KeyError:
             model_dp.delete()
 
 
