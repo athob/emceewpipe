@@ -6,7 +6,6 @@ import tenacity as tn
 import wpipe as wp
 import pandas as pd
 
-
 PARENT_IS_MASTER_CACHE = os.path.basename(sys.argv[0]) == 'master_cache.py'
 try:
     LEN_EVENTPOOL = int(wp.ThisJob.config.parameters['len_eventpool'])
@@ -15,7 +14,9 @@ except AttributeError:
 
 
 def wait_model_dp_ready(model_dp):
-    for retry in tn.Retrying(retry=tn.retry_if_exception_type(KeyError), wait=tn.wait_random()):
+    for retry in tn.Retrying(
+            retry=(tn.retry_if_exception_type(KeyError) | tn.retry_if_exception_type(wp.si.exc.NoResultFound)),
+            wait=tn.wait_random()):
         with retry:
             while not model_dp.options['ready']:
                 time.sleep(1)
