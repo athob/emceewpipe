@@ -59,11 +59,13 @@ def get_cache_dp():
     return cache_dp
 
 
-if PARENT_IS_MASTER_CACHE:
+if False:  # PARENT_IS_MASTER_CACHE: TODO different implementation?
     EXISTING_MODELS = pd.DataFrame()
 else:
     try:
+        wp.ThisJob.logprint('ATTEMPTING LOADING CACHE DATAPRODUCT')
         EXISTING_MODELS = read_model_dp(get_cache_dp())
+        wp.ThisJob.logprint('CACHE DATAPRODUCT LOADED')
     except (IndexError, AttributeError):
         EXISTING_MODELS = pd.DataFrame()
 

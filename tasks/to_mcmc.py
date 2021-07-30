@@ -28,6 +28,7 @@ def kernel(u):
 
 
 def make_new_model(*args):
+    wp.ThisJob.logprint("ENTERING MAKE_NEW_MODEL")
     models = update_models()
     if len(models):
         deviations = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
@@ -73,21 +74,26 @@ def interp_model(*args):
     # models = EXISTING_MODELS.drop('name', axis=1)
     models = return_models().drop('dp_id', axis=1)
     # points = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
-    # wp.ThisJob.logprint('STEP 1')
+    wp.ThisJob.logprint('STEP 1')
     EXISTING_VORONOI = spatial.Voronoi(np.array(models.index.to_list()) / dmu.CHARA_LENGTHS, incremental=True)  # TODO
     # if EXISTING_VORONOI is None:
     #     EXISTING_VORONOI = spatial.Voronoi(np.array(models.index.to_list()) / dmu.CHARA_LENGTHS, incremental=True)
     # elif EXISTING_VORONOI.npoints < len(models):
     #     EXISTING_VORONOI.add_points(np.array(models.index[EXISTING_VORONOI.npoints:].to_list()) / dmu.CHARA_LENGTHS)
-    # wp.ThisJob.logprint('STEP 2')
+    wp.ThisJob.logprint('STEP 2')
     vor = EXISTING_VORONOI  # vor = copy.copy(EXISTING_VORONOI)  # TODO: THIS DIDN'T WORK :'(
     # wp.ThisJob.logprint('STEP 3')
     volumes = np.zeros(vor.npoints)
     vertices = np.vstack([vor.vertices, np.nan * np.ones(vor.ndim)])
     regions = np.array(vor.regions)[vor.point_region]
     # vor.add_points([np.zeros(vor.ndim)])
-    # wp.ThisJob.logprint('STEP 4')
-    vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+    wp.ThisJob.logprint('STEP 4')
+    # vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+    try:
+        vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+    except spatial.qhull.QhullError as Err:
+        wp.ThisJob.logprint('Encountered a QhullError:\n' + Err.args[0])
+        vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
     central_region = np.array(vor.regions[vor.point_region[-1]])
     # wp.ThisJob.logprint('STEP 5')
     if -1 in central_region:
@@ -120,6 +126,7 @@ def interp_model(*args):
 
 
 def model_fun(*args):
+    wp.ThisJob.logprint("ENTERING MODEL_FUN")
     if make_new_model(*args):
         return comput_model(*args)
     else:
@@ -130,6 +137,7 @@ def model_fun(*args):
 
 
 def log_likelihood(theta):
+    wp.ThisJob.logprint("ENTERING LOG_LIKELIHOOD")
     try:
         if not dmu.domain(theta):
             raise ValueError
@@ -149,6 +157,7 @@ def log_prior(theta):
 
 
 def log_probability(theta):
+    wp.ThisJob.logprint("ENTERING LOG_PROBABILITY")
     lp = log_prior(theta)
     if not np.isfinite(lp):
         return -np.inf
@@ -156,6 +165,7 @@ def log_probability(theta):
 
 
 def to_mcmc(theta):
+    wp.ThisJob.logprint("ENTERING TO_MCMC")
     if dmu.domain(theta):
         return log_probability(theta)
     else:
@@ -163,16 +173,20 @@ def to_mcmc(theta):
 
 
 def send_to_mcmc(theta):
+    wp.ThisJob.logprint("ENTERING SEND_TO_MCMC")
     log_prob = to_mcmc(theta)
     if log_prob == -np.inf:
         log_prob = 'MinusInfinity'
     wp.ThisEvent.options['log_prob'] = log_prob
     wp.ThisEvent.options['new_log_prob'] = True
+    wp.ThisJob.logprint("SENT " + str(log_prob) + " TO MCMC")
 
 
 def listen_for_theta():
+    wp.ThisJob.logprint("LISTENING FOR NEW THETA")
     while not wp.ThisEvent.options['new_theta']:
         time.sleep(0.01)
+    wp.ThisJob.logprint("DETECTED NEW THETA")
     wp.ThisEvent.options['new_theta'] = False
     theta = [wp.ThisEvent.options['theta_%d' % i] for i in range(wp.ThisEvent.options['len_theta'])]
     return theta

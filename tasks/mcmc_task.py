@@ -13,7 +13,7 @@ def register(task):
     _temp = task.mask(source='*', name='run_mcmc', value='*')
 
 
-SUBMISSION_TYPE = None  # 'pbs'
+SUBMISSION_TYPE = 'pbs'
 NB_WALKERS = 32
 NB_DIM = 3
 NB_ITERATIONS = 5000
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     MASTER_CACHE.fire()
     EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), name='start_walker',
                           options={} if SUBMISSION_TYPE is None
-                          else {'submission_type': SUBMISSION_TYPE, 'job_time': 5,
+                          else {'submission_type': SUBMISSION_TYPE, 'job_time': 20,
                                 'walltime': str(conf_params['walltime'])})
     EVENTPOOL.fire()
     SAMPLER = run_mcmc(EVENTPOOL)

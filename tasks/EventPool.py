@@ -50,10 +50,10 @@ class EventPool:
         n = 0
         m = 0
         while m < struct_length or pool_indexes:
-            # wp.ThisJob.logprint('\nSTRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
+            wp.ThisJob.logprint('\nSTRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
             # looping around the pool to find available event
             while not (self._events[n].options['new_log_prob']) if (n in pool_indexes.keys()) else True:
-                # TODO: add management to this loop to restart expired events
+                # management to this loop to restart expired events
                 if self._walltime is not None:
                     _event = self._events[n]
                     _jobs = _event.fired_jobs
@@ -81,17 +81,17 @@ class EventPool:
                 if log_prob == 'MinusInfinity':
                     log_prob = -np.inf
                 output[pool_indexes[n]] = log_prob
-                # wp.ThisJob.logprint('\nGRABBING\t'+repr(n)+'\t'+repr(output[pool_indexes[n]]))
+                wp.ThisJob.logprint('GRABBING\t'+repr(n)+'\t'+repr(output[pool_indexes[n]]))
             # send element to event if more left, remove from pool_indexes otherwise
             if m < struct_length:
                 self._send_theta(self._events[n], func(struct[m]))
-                # wp.ThisJob.logprint('\nSENDING\t'+repr(m))
+                wp.ThisJob.logprint('SENDING\t'+repr(m))
                 pool_indexes[n] = m
                 m += 1
                 n += 1
                 n %= pool_length
             else:
-                # wp.ThisJob.logprint('\nDELETING\t'+repr(n))
+                wp.ThisJob.logprint('DELETING\t'+repr(n))
                 del pool_indexes[n]
                 self._events[n].options['new_log_prob'] = True
         # wp.ThisJob.logprint('\nRETURN\n'+repr(output))
