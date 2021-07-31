@@ -68,6 +68,10 @@ def comput_model(*args):
     return new_model
 
 
+class NegInCentralReg(Exception):
+    pass
+
+
 def interp_model(*args):
     wp.ThisJob.logprint('\n\nINTERPOLATE MODEL\n\n')
     global EXISTING_VORONOI
@@ -97,7 +101,7 @@ def interp_model(*args):
     central_region = np.array(vor.regions[vor.point_region[-1]])
     # wp.ThisJob.logprint('STEP 5')
     if -1 in central_region:
-        raise
+        raise NegInCentralReg()
     # calculate unit vectors where voronoi centroids are
     # wp.ThisJob.logprint('STEP 6')
     unit_vectors = vor.points / np.linalg.norm(vor.points, axis=1)[:, np.newaxis]
@@ -130,10 +134,10 @@ def model_fun(*args):
     if make_new_model(*args):
         return comput_model(*args)
     else:
-        # try:
-        return interp_model(*args)
-        # except Exception:
-        #     return comput_model(*args)
+        try:
+            return interp_model(*args)
+        except NegInCentralReg:
+            return comput_model(*args)
 
 
 def log_likelihood(theta):
