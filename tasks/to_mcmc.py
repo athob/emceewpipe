@@ -37,17 +37,20 @@ def make_new_model(*args):
         structure = np.sum(weights[:, np.newaxis, np.newaxis] * (
             np.matmul(deviations[:, :, np.newaxis], deviations[:, np.newaxis, :])), axis=0) / np.sum(
             weights)
-        eigval, eigvec = linalg.eigh(structure)
-        changed = np.matmul(linalg.inv(eigvec), deviations[..., np.newaxis])[..., 0]
-        squ_conic_ratios = changed ** 2 / (HYPERBOLIC_PARAM ** 2 + distances[:, np.newaxis] ** 2 - changed ** 2)
-        axes_weights = np.sqrt(
-            weights[:, np.newaxis] * np.clip((1 - squ_conic_ratios) / (1 + squ_conic_ratios), 0, np.inf))
-        dim, ind = np.where(changed.T > 0)
-        dim = np.unique(dim, return_index=True)
-        all_directions = np.all([np.sum(axes_weights[i, d]) >= 1 for d, i in zip(dim[0], np.split(ind, dim[1][1:]))])
-        dim, ind = np.where(changed.T < 0)
-        dim = np.unique(dim, return_index=True)
-        all_directions &= np.all([np.sum(axes_weights[i, d]) >= 1 for d, i in zip(dim[0], np.split(ind, dim[1][1:]))])
+        if np.all(np.isfinite(structure)):
+            eigval, eigvec = linalg.eigh(structure)
+            changed = np.matmul(linalg.inv(eigvec), deviations[..., np.newaxis])[..., 0]
+            squ_conic_ratios = changed ** 2 / (HYPERBOLIC_PARAM ** 2 + distances[:, np.newaxis] ** 2 - changed ** 2)
+            axes_weights = np.sqrt(
+                weights[:, np.newaxis] * np.clip((1 - squ_conic_ratios) / (1 + squ_conic_ratios), 0, np.inf))
+            dim, ind = np.where(changed.T > 0)
+            dim = np.unique(dim, return_index=True)
+            all_directions = np.all([np.sum(axes_weights[i, d]) >= 1 for d, i in zip(dim[0], np.split(ind, dim[1][1:]))])
+            dim, ind = np.where(changed.T < 0)
+            dim = np.unique(dim, return_index=True)
+            all_directions &= np.all([np.sum(axes_weights[i, d]) >= 1 for d, i in zip(dim[0], np.split(ind, dim[1][1:]))])
+        else:
+            all_directions = False
     else:
         all_directions = False
     return ~all_directions
