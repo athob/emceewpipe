@@ -54,7 +54,7 @@ def make_new_model(*args):
 
 
 def comput_model(*args):
-    wp.ThisJob.logprint('\n\nMAKE NEW MODEL\n\n')
+    wp.ThisJob.logprint('\nMAKE NEW MODEL\n')
     model_dp = create_model_dp(args)
     wp.ThisJob.firing_event.options['current_dpid'] = model_dp.dp_id
     new_model = dmu.model(*args)
@@ -73,7 +73,7 @@ class NegInCentralReg(Exception):
 
 
 def interp_model(*args):
-    wp.ThisJob.logprint('\n\nINTERPOLATE MODEL\n\n')
+    wp.ThisJob.logprint('\nINTERPOLATE MODEL\n')
     global EXISTING_VORONOI
     # models = EXISTING_MODELS.drop('name', axis=1)
     models = return_models().drop('dp_id', axis=1)
@@ -140,16 +140,20 @@ def model_fun(*args):
             return comput_model(*args)
 
 
+class NotInDomain(Exception):
+    pass
+
+
 def log_likelihood(theta):
     wp.ThisJob.logprint("ENTERING LOG_LIKELIHOOD")
     try:
         if not dmu.domain(theta):
-            raise ValueError
+            raise NotInDomain()
         n_extra_args = len(inspect.signature(dmu.log_likelihood_of_model).parameters)-1
         extra_args = tuple(theta[len(theta)-n_extra_args:])
         args = tuple(theta[:len(theta)-n_extra_args])
         return dmu.log_likelihood_of_model(*((model_fun(*args),) + extra_args))
-    except ValueError:
+    except NotInDomain:
         return -np.inf
 
 
