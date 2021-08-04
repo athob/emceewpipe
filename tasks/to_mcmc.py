@@ -3,6 +3,8 @@ import os
 import inspect
 import copy
 import time
+import traceback
+import tenacity as tn
 import wpipe as wp
 import numpy as np
 import pandas as pd
@@ -129,6 +131,9 @@ def interp_model(*args):
     # while np.sum(weights) != 1.:
     #     weights /= np.sum(weights)
     # perform interpolation
+    wp.ThisJob.logprint(
+        'RETURN INTERPOLATE, models.to_numpy().T.shape = %s, weights.shape = %s' % (models.to_numpy().T.shape,
+                                                                                    weights.shape))
     return np.sum(models.to_numpy().T * weights, axis=1)
 
 
@@ -147,6 +152,17 @@ class NotInDomain(Exception):
     pass
 
 
+def __after(retry_state):
+    try:
+        retry_state.outcome.result()
+    except Exception as Err:
+        with wp.ThisJob.logprint().open('a') as _f:
+            _f.write("ENCOUNTERED EXCEPTION, TRACEBACK BELOW:\n")
+            traceback.print_tb(Err.__traceback__, file=_f)
+            _f.write(repr(Err)+'\n')
+            _f.write('RETRYING\n')
+
+
 def log_likelihood(theta):
     wp.ThisJob.logprint("ENTERING LOG_LIKELIHOOD")
     try:
@@ -155,7 +171,12 @@ def log_likelihood(theta):
         n_extra_args = len(inspect.signature(dmu.log_likelihood_of_model).parameters)-1
         extra_args = tuple(theta[len(theta)-n_extra_args:])
         args = tuple(theta[:len(theta)-n_extra_args])
-        return dmu.log_likelihood_of_model(*((model_fun(*args),) + extra_args))
+        for retry in tn.Retrying(
+                retry=tn.retry_if_exception_type(ValueError),
+                wait=tn.wait_random(),
+                after=__after):
+            with retry:
+                return dmu.log_likelihood_of_model(*((model_fun(*args),) + extra_args))
     except NotInDomain:
         return -np.inf
 
