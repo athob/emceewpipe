@@ -89,7 +89,9 @@ def update_models():
     # if len(EXISTING_MODELS):
     #     missing &= ~np.in1d(filenames, list(EXISTING_MODELS['name']))
     # EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(np.array(proc_dps)[missing])])
-    EXISTING_MODELS = pd.concat([EXISTING_MODELS, load_models(proc_dps)])
+    _temp = load_models(proc_dps)
+    wp.ThisJob.logprint("CONCATENATING DATAFRAME:\n %s" % repr(_temp))
+    EXISTING_MODELS = pd.concat([EXISTING_MODELS, _temp])
     return EXISTING_MODELS
 
 
