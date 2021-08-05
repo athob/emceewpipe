@@ -27,7 +27,7 @@ def read_model_dp(model_dp):
     if not temp.empty:
         model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
     else:
-        model = temp
+        model = pd.DataFrame()
     if model_dp.data_type == 'Model':
         if PARENT_IS_MASTER_CACHE:
             model_dp.options['cached'] = True
