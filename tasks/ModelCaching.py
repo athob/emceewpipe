@@ -81,6 +81,7 @@ def load_models(model_dps):
 def update_models():
     global EXISTING_MODELS
     wp.ThisJob.logprint("UPDATING MODELS: current EXISTING_MODELS.shape = %s" % repr(EXISTING_MODELS.shape))
+    wp.ThisJob.logprint("                         EXISTING_MODELS.columns = %s" % repr(EXISTING_MODELS.columns.to_list()))
     dp_ids = list(EXISTING_MODELS['dp_id']) if len(EXISTING_MODELS) else []
     proc_dps = wp.DataProduct.select(wp.si.DataProduct.id.not_in(dp_ids),
                                      dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
