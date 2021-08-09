@@ -94,7 +94,7 @@ def interp_model(*args):
     # wp.ThisJob.logprint('STEP 3')
     volumes = np.zeros(vor.npoints)
     vertices = np.vstack([vor.vertices, np.nan * np.ones(vor.ndim)])
-    regions = np.array(vor.regions)[vor.point_region]
+    regions = np.array(vor.regions, dtype=object)[vor.point_region]
     # vor.add_points([np.zeros(vor.ndim)])
     wp.ThisJob.logprint('STEP 4')
     # vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
