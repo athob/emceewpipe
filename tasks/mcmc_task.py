@@ -62,7 +62,8 @@ if __name__ == '__main__':
     EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), name='start_walker',
                           options={} if SUBMISSION_TYPE is None
                           else {'submission_type': SUBMISSION_TYPE, 'job_time': 20,
-                                'walltime': str(conf_params['walltime'])})
+                                'walltime': str(conf_params['walltime']),
+                                'job_openmp': bool(conf_params['job_openmp'])})
     EVENTPOOL.fire()
     SAMPLER = run_mcmc(EVENTPOOL)
     EVENTPOOL.kill()
