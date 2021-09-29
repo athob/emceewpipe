@@ -21,11 +21,13 @@ FILTER_IDS = ['Spitzer/IRAC.I1', 'Spitzer/IRAC.I2', 'Spitzer/IRAC.I3', 'Spitzer/
 FILTER_IDS += ['HST/ACS_WFC.F435W', 'HST/ACS_WFC.F606W', 'HST/ACS_WFC.F814W', 'HST/WFC3_IR.F110W', 'HST/WFC3_IR.F160W']
 
 T_STAR_MIN = 2500.
-T_STAR_MAX = 50000.
+T_STAR_MAX = 25000.
 DEPTH_MIN = 0.
-DEPTH_MAX = np.inf
+DEPTH_MAX = 30  # np.inf
 T_INNER_MIN = 0.
 T_INNER_MAX = 1500.
+T_INN_F_MIN = 0.2
+T_INN_F_MAX = 1.
 
 SYNDUSTPY = None
 
@@ -33,13 +35,15 @@ SYNDUSTPY = None
 def convert_utheta(utheta):
     return np.array([np.exp(utheta[0] * (np.log(T_STAR_MAX) - np.log(T_STAR_MIN)) + np.log(T_STAR_MIN)),
                      -np.log(1 - utheta[1]),
-                     utheta[2] * (T_INNER_MAX - T_INNER_MIN) + T_INNER_MIN])
+                     # utheta[2] * (T_INNER_MAX - T_INNER_MIN) + T_INNER_MIN])
+                     utheta[2] * (T_INN_F_MAX - T_INN_F_MIN) + T_INN_F_MIN])
 
 
 def convert_theta(theta):
     return np.array([(np.log(theta[0]) - np.log(T_STAR_MIN))/(np.log(T_STAR_MAX) - np.log(T_STAR_MIN)),
                      1 - np.exp(-theta[1]),
-                     (theta[2] - T_INNER_MIN) / (T_INNER_MAX - T_INNER_MIN)])
+                     # (theta[2] - T_INNER_MIN) / (T_INNER_MAX - T_INNER_MIN)])
+                     (theta[2] - T_INN_F_MIN) / (T_INN_F_MAX - T_INN_F_MIN)])
 
 
 def prepare_syndustpy(filter_ids=None):
@@ -67,14 +71,16 @@ def prepare_data_model():
 
 
 def domain(theta):
-    temp_star, depth, temp_inner = theta
+    # temp_star, depth, temp_inner = theta
+    temp_star, depth, temp_inn_f = theta
     output = T_STAR_MIN < temp_star < T_STAR_MAX and \
              DEPTH_MIN < depth < DEPTH_MAX and \
-             T_INNER_MIN < temp_inner < T_INNER_MAX
+             T_INNER_MIN < temp_inn_f < T_INNER_MAX  # T_INNER_MIN < temp_inner < T_INNER_MAX
     return output
 
 
-def model(temp_star, temp_inner, depth):
+def model(temp_star, temp_inn_f, depth):  # (temp_star, temp_inner, depth):
+    temp_inner = temp_inn_f * temp_star
     dusty_params = {'star_temperature': temp_star,
                     'v_band_optical_depth': depth,
                     'inner_edge_temperature': temp_inner}

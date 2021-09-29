@@ -13,12 +13,13 @@ except AttributeError:
     LEN_EVENTPOOL = None
 
 
-def wait_model_dp_ready(model_dp):
+def wait_model_dp_ready(model_dp, or_skip_after=5):
+    start = time.time()
     for retry in tn.Retrying(
             retry=(tn.retry_if_exception_type(KeyError) | tn.retry_if_exception_type(wp.si.exc.NoResultFound)),
             wait=tn.wait_random()):
         with retry:
-            while not model_dp.options['ready']:
+            while time.time() - start < or_skip_after and not model_dp.options['ready']:
                 time.sleep(1)
 
 
