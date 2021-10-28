@@ -2,6 +2,8 @@
 """
 Can be modified
 """
+import sys
+
 import numpy as np
 import wpipe as wp
 from astropy import units, table
@@ -75,16 +77,17 @@ def domain(theta):
     temp_star, depth, temp_inn_f = theta
     output = T_STAR_MIN < temp_star < T_STAR_MAX and \
              DEPTH_MIN < depth < DEPTH_MAX and \
-             T_INNER_MIN < temp_inn_f < T_INNER_MAX  # T_INNER_MIN < temp_inner < T_INNER_MAX
+             T_INN_F_MIN < temp_inn_f < T_INN_F_MAX  # T_INNER_MIN < temp_inner < T_INNER_MAX
     return output
 
 
-def model(temp_star, temp_inn_f, depth):  # (temp_star, temp_inner, depth):
+def model(temp_star, depth, temp_inn_f):  # (temp_star, temp_inner, depth):
     temp_inner = temp_inn_f * temp_star
     dusty_params = {'star_temperature': temp_star,
                     'v_band_optical_depth': depth,
                     'inner_edge_temperature': temp_inner}
-    output_sdp = SYNDUSTPY.run(**dusty_params)
+    output_sdp = SYNDUSTPY.run(**dusty_params)  # TODO: catch ValueError or understand what happened?
+    sys.stdout.flush()
     flux = output_sdp.flux_by_band.to(IRRADI_UNIT / LAMBDA_UNIT)
     return flux.value
 
