@@ -24,7 +24,14 @@ def wait_model_dp_ready(model_dp, or_skip_after=5):
 
 
 def read_model_dp(model_dp):
-    temp = pd.read_csv(model_dp.path)
+    for retry in tn.Retrying(
+            retry=tn.retry_if_exception_type(FileNotFoundError),
+            after=lambda retry_state:
+            wp.ThisJob.logprint("Failed first reading attempt of %s; entering retrying loop" % model_dp.path)
+            if retry_state.attempt_number == 1 else None,
+            wait=tn.wait_random()):
+        with retry:
+            temp = pd.read_csv(model_dp.path)
     if not temp.empty:
         model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
     else:
