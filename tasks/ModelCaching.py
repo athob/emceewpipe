@@ -85,8 +85,9 @@ else:
 
 def load_models(model_dps):
     # wp.ThisJob.logprint('\nLOAD_MODELS')
-    if len(model_dps):
-        return pd.concat([read_model_dp(model_dp) for model_dp in model_dps if wait_model_dp_ready(model_dp) is None])
+    temp = [read_model_dp(model_dp) for model_dp in model_dps if wait_model_dp_ready(model_dp) is None]
+    if len(temp):
+        return pd.concat(temp)
     else:
         return pd.DataFrame()
 
