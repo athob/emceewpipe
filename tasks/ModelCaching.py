@@ -19,8 +19,11 @@ def wait_model_dp_ready(model_dp, or_skip_after=5):
             retry=(tn.retry_if_exception_type(KeyError) | tn.retry_if_exception_type(wp.si.exc.NoResultFound)),
             wait=tn.wait_random()):
         with retry:
-            while time.time() - start < or_skip_after and not model_dp.options['ready']:
-                time.sleep(1)
+            while not model_dp.options['ready']:
+                if time.time() - start < or_skip_after:
+                    time.sleep(1)
+                else:
+                    return 1
 
 
 def read_model_dp(model_dp):
@@ -32,6 +35,8 @@ def read_model_dp(model_dp):
             wait=tn.wait_random()):
         with retry:
             temp = pd.read_csv(model_dp.path)
+            wp.ThisJob.logprint("Succesfully read %s at attempt #%d" % (model_dp.path,
+                                                                        retry.retry_state.attempt_number))
     if not temp.empty:
         model = temp.set_index([tag for tag in temp.columns if tag[:1] == 'a'])
     else:
