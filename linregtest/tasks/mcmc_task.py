@@ -47,7 +47,7 @@ class EventPool:
             # check if available event should have a result and get it
             if pool_indexes[n] >= 0:
                 log_prob = self._get_log_prob(self._events[n])
-                if log_prob == 'MinusInfinity':
+                if log_prob == '-Inf':
                     log_prob = -np.inf
                 output[pool_indexes[n]] = log_prob
                 wp.ThisJob.logprint('\nGRABBING\t'+repr(n)+'\t'+repr(output[pool_indexes[n]]))

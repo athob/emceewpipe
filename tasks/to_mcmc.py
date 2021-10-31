@@ -208,7 +208,7 @@ def send_to_mcmc(theta):
     wp.ThisJob.logprint("ENTERING SEND_TO_MCMC")
     log_prob = to_mcmc(theta)
     if log_prob == -np.inf:
-        log_prob = 'MinusInfinity'
+        log_prob = '-Inf'
     wp.ThisEvent.options['log_prob'] = log_prob
     wp.ThisEvent.options['new_log_prob'] = True
     wp.ThisJob.logprint("SENT " + str(log_prob) + " TO MCMC")
