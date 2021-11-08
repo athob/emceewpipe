@@ -15,8 +15,8 @@ def register(task):
 
 SUBMISSION_TYPE = 'pbs'
 NB_WALKERS = 32
-NB_DIM = 3
-NB_ITERATIONS = 5000
+# NB_DIM = 3
+# NB_ITERATIONS = 5000
 
 
 def to_mcmc(utheta):
@@ -25,14 +25,15 @@ def to_mcmc(utheta):
 
 
 def run_mcmc(pool):
-    upos = np.random.rand(NB_WALKERS, NB_DIM)
+    upos = np.random.rand(NB_WALKERS, dmu.NB_DIM)
     this_config = wp.ThisJob.config
+    NB_ITERATIONS = this_config.options['nb_iterations']
     backend_dp = this_config.dataproduct(filename='emcee_backend.h5',
                                          relativepath=this_config.procpath,
                                          group='proc')
     filename = backend_dp.path
     backend = emcee.backends.HDFBackend(filename)
-    sampler = emcee.EnsembleSampler(NB_WALKERS, NB_DIM, to_mcmc, backend=backend, pool=pool)
+    sampler = emcee.EnsembleSampler(NB_WALKERS, dmu.NB_DIM, to_mcmc, backend=backend, pool=pool)
     sampler.run_mcmc(None if sampler.iteration else upos, NB_ITERATIONS - sampler.iteration, progress=True)
     return sampler
 

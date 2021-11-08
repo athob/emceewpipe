@@ -9,7 +9,9 @@ import wpipe as wp
 from astropy import units, table
 from dustpy import SynDustPy
 
-CHARA_LENGTHS = [200, 50, 1]
+NB_DIM = 3
+LABELS = ["$T_{star}$", "$\tau$", "$f_{T}$"]
+CHARA_LENGTHS = [200, 10, 0.05]
 DATA = None
 MODEL_X = None
 
@@ -26,8 +28,8 @@ T_STAR_MIN = 2500.
 T_STAR_MAX = 25000.
 DEPTH_MIN = 0.
 DEPTH_MAX = 30  # np.inf
-T_INNER_MIN = 0.
-T_INNER_MAX = 1500.
+# T_INNER_MIN = 0.
+# T_INNER_MAX = 1500.
 T_INN_F_MIN = 0.2
 T_INN_F_MAX = 1.
 

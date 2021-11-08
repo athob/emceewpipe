@@ -4,13 +4,13 @@ import wpipe as wp
 import matplotlib.pyplot as plt
 import corner
 
+if __name__ == '__main__':
+    import data_model_utils as dmu
+
 
 def register(task):
     _temp = task.mask(source='*', name='start', value=task.name)
     _temp = task.mask(source='*', name='make_corner', value='*')
-
-
-LABELS = ["m", "b", "log(f)"]
 
 
 def get_flat_samples():
@@ -23,7 +23,7 @@ def get_flat_samples():
 def make_corner_plot(flat_samples):
     fig = plt.figure(figsize=[5, 5])
     corner.corner(
-        flat_samples, labels=LABELS, fig=fig
+        flat_samples, labels=dmu.LABELS, fig=fig
     )
     return fig
 
