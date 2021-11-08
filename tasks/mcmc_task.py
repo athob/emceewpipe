@@ -27,7 +27,7 @@ def to_mcmc(utheta):
 def run_mcmc(pool):
     upos = np.random.rand(NB_WALKERS, dmu.NB_DIM)
     this_config = wp.ThisJob.config
-    NB_ITERATIONS = this_config.options['nb_iterations']
+    NB_ITERATIONS = this_config.parameters['nb_iterations']
     backend_dp = this_config.dataproduct(filename='emcee_backend.h5',
                                          relativepath=this_config.procpath,
                                          group='proc')
