@@ -77,6 +77,10 @@ class NegInCentralReg(Exception):
     pass
 
 
+class InModelLibrary(Exception):
+    pass
+
+
 def interp_model(*args):
     wp.ThisJob.logprint('\nINTERPOLATE MODEL\n')
     global EXISTING_VORONOI
@@ -97,12 +101,17 @@ def interp_model(*args):
     regions = np.array(vor.regions, dtype=object)[vor.point_region]
     # vor.add_points([np.zeros(vor.ndim)])
     wp.ThisJob.logprint('STEP 4')
-    # vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+    center = args / np.array(dmu.CHARA_LENGTHS)
+    distances = np.linalg.norm(vor.points - center, axis=1)
+    nearest_model = np.argmin(distances)
+    if distances[nearest_model] <= np.finfo('float').resolution:
+        return models.to_numpy()[nearest_model]
+    # vor.add_points([center])
     try:
-        vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+        vor.add_points([center])
     except spatial.qhull.QhullError as Err:
         wp.ThisJob.logprint('Encountered a QhullError:\n' + Err.args[0])
-        vor.add_points([args / np.array(dmu.CHARA_LENGTHS)])
+        vor.add_points([center])
     central_region = np.array(vor.regions[vor.point_region[-1]])
     # wp.ThisJob.logprint('STEP 5')
     if -1 in central_region:
