@@ -14,6 +14,7 @@ def convert_walltime(walltime):  # TODO: includes days?
         return datetime.timedelta(**dict(zip(['hours', 'minutes', 'seconds'], map(float, walltime.split(':')))))
 
 
+WALLTIME_MARGIN = datetime.timedelta(minutes=5)
 DEFAULT_WALLTIME_DICT = {'': None, 'pbs': wp.scheduler.PbsScheduler.DEFAULT_WALLTIME}
 
 
@@ -44,6 +45,7 @@ class EventPool:
     def map(self, func, struct):  # TODO: struct is actually a generator, think about a more suitable implementation
         struct = list(struct)
         struct_length = len(list(struct))
+        # wp.ThisJob.logprint('\nSTART MAP LENGTH\t'+repr(struct_length)+'\n'+repr(np.array(struct)))
         pool_length = len(self._events)
         output = np.nan * np.empty(struct_length)
         pool_indexes = dict(zip(range(pool_length), pool_length * [-1]))
@@ -63,7 +65,7 @@ class EventPool:
                         if _job.endtime is None:
                             _starttime = _job.starttime
                             if _starttime is not None:
-                                if datetime.datetime.utcnow() - _starttime > self._walltime:
+                                if datetime.datetime.utcnow() - _starttime > self._walltime + WALLTIME_MARGIN:
                                     _current_dpid = _event.options['current_dpid']
                                     if _current_dpid is not None:
                                         wp.DataProduct(int(_current_dpid)).delete()
@@ -95,6 +97,8 @@ class EventPool:
                 del pool_indexes[n]
                 self._events[n].options['new_log_prob'] = True
         # wp.ThisJob.logprint('\nRETURN\n'+repr(output))
+        # for n in range(pool_length):
+        #     self._events[n].options['new_log_prob'] = True
         return output
 
     def kill(self):
