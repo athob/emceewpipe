@@ -30,22 +30,23 @@ DEPTH_MIN = 0.
 DEPTH_MAX = 30  # np.inf
 # T_INNER_MIN = 0.
 # T_INNER_MAX = 1500.
-T_INN_F_MIN = 0.2
+T_INN_F_MIN = 0.01
 T_INN_F_MAX = 1.
 
+LOG_BOUND = 0.9
 SYNDUSTPY = None
 
 
 def convert_utheta(utheta):
     return np.array([np.exp(utheta[0] * (np.log(T_STAR_MAX) - np.log(T_STAR_MIN)) + np.log(T_STAR_MIN)),
-                     -np.log(1 - utheta[1]),
+                     DEPTH_MAX*np.log(1 - utheta[1])/np.log(1-LOG_BOUND),
                      # utheta[2] * (T_INNER_MAX - T_INNER_MIN) + T_INNER_MIN])
                      utheta[2] * (T_INN_F_MAX - T_INN_F_MIN) + T_INN_F_MIN])
 
 
 def convert_theta(theta):
     return np.array([(np.log(theta[0]) - np.log(T_STAR_MIN))/(np.log(T_STAR_MAX) - np.log(T_STAR_MIN)),
-                     1 - np.exp(-theta[1]),
+                     1 - (1 - LOG_BOUND) ** (theta[1] / DEPTH_MAX),
                      # (theta[2] - T_INNER_MIN) / (T_INNER_MAX - T_INNER_MIN)])
                      (theta[2] - T_INN_F_MIN) / (T_INN_F_MAX - T_INN_F_MIN)])
 
