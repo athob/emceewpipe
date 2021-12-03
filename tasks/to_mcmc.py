@@ -104,7 +104,7 @@ def interp_model(*args):
     center = args / np.array(dmu.CHARA_LENGTHS)
     distances = np.linalg.norm(vor.points - center, axis=1)
     nearest_model = np.argmin(distances)
-    if distances[nearest_model] <= np.finfo('float').resolution:
+    if distances[nearest_model] <= 2*np.finfo('float').resolution:
         return models.to_numpy()[nearest_model]
     # vor.add_points([center])
     try:
