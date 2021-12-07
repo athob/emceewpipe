@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 import numpy as np
+from scipy import special
 import wpipe as wp
 import matplotlib.pyplot as plt
 import corner
 
 if __name__ == '__main__':
     import data_model_utils as dmu
+
+
+CORNER_RANGE = 0.98
+PLUSSIGMA = (1+special.erf(2**-.5))/2
+MINUSSIGMA = (1+special.erf(-2**-.5))/2
 
 
 def register(task):
@@ -21,9 +27,8 @@ def get_flat_samples():
 
 
 def make_corner_plot(flat_samples):
-    fig = plt.figure(figsize=[5, 5])
-    corner.corner(
-        flat_samples, labels=dmu.LABELS, quantiles=[0.16, 0.5, 0.84], fig=fig, show_titles=True
+    fig = corner.corner(
+        flat_samples, range=CORNER_RANGE, labels=dmu.LABELS, quantiles=[MINUSSIGMA, 0.5, PLUSSIGMA], show_titles=True
     )
     return fig
 
