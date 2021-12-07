@@ -59,7 +59,7 @@ def save_flat_samples(flat_samples):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     conf_params = wp.ThisJob.config.parameters
-    SUBMISSION_TYPE = conf_params['submission_type']
+    SUBMISSION_TYPE = conf_params['walkers_submission_type']
     MASTER_CACHE = wp.ThisJob.child_event(name='start_cache')
     MASTER_CACHE.fire()
     EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), name='start_walker',
