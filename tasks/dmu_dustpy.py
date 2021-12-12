@@ -10,7 +10,7 @@ from astropy import units, table
 from dustpy import SynDustPy
 
 LABELS = ["$T_{star}$", "$\\tau$", "$f_{T}$"]
-CHARA_LENGTHS = [200, 3, 0.05]
+CHARA_LENGTHS = [100, 0.5, 0.01]
 DATA = None
 MODEL_X = None
 NB_DIM = len(LABELS)
