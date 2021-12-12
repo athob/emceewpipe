@@ -28,7 +28,7 @@ def get_flat_samples():
 
 def make_corner_plot(flat_samples):
     fig = corner.corner(
-        flat_samples, range=CORNER_RANGE, labels=dmu.LABELS, quantiles=[MINUSSIGMA, 0.5, PLUSSIGMA], show_titles=True
+        flat_samples, range=dmu.NB_DIM*[CORNER_RANGE], labels=dmu.LABELS, quantiles=[MINUSSIGMA, 0.5, PLUSSIGMA], show_titles=True
     )
     return fig
 

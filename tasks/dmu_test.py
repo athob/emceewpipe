@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 import wpipe as wp
 
-NB_DIM = 3
 LABELS = ["m", "b", "log(f)"]
 CHARA_LENGTHS = [0.1, 0.1]
 DATA = None
 MODEL_X = None
+NB_DIM = len(LABELS)
 
 
 def convert_utheta(utheta):
