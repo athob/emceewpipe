@@ -16,8 +16,10 @@ CACHE_SLEEP = 60
 
 def read_cat_and_cache(cache_dp):
     cache_dp.options['ready'] = False
+    wp.ThisEvent.options['currently_caching'] = True
     models = update_models()
     models.to_csv(cache_dp.path)
+    wp.ThisEvent.options['currently_caching'] = False
     cache_dp.options['ready'] = True
     return
 

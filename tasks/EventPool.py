@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import datetime
+import time
+
 import numpy as np
 import wpipe as wp
 
@@ -19,9 +21,10 @@ DEFAULT_WALLTIME_DICT = {'': None, 'pbs': wp.scheduler.PbsScheduler.DEFAULT_WALL
 
 
 class EventPool:
-    def __init__(self, job, pool_length, *args, **kwargs):
+    def __init__(self, job, pool_length, caching_event, *args, **kwargs):
         self._job = job
         d = repr(len(repr(pool_length)))
+        self._caching_event = caching_event
         self._events = list(map(lambda n: job.child_event(*args, tag=('PoolEvent#%0' + d + 'd') % n,
                                                           **kwargs), range(pool_length)))
         self._empty_event_jobs = list(map(lambda event: len(event.fired_jobs) == 0, self._events))
@@ -68,6 +71,8 @@ class EventPool:
                                 if datetime.datetime.utcnow() - _starttime > self._walltime + WALLTIME_MARGIN:
                                     _current_dpid = _event.options['current_dpid']
                                     if _current_dpid is not None:
+                                        while self._caching_event['currently_caching']:
+                                            time.sleep(1)
                                         wp.DataProduct(int(_current_dpid)).delete()
                                     _job.expire()
                                     _event.options['new_log_prob'] = False

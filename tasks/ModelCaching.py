@@ -118,6 +118,7 @@ def return_models():
 def delete_cached_models():
     model_dps = wp.DataProduct.select(dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
     for model_dp in model_dps:
+        wp.ThisJob.logprint("PROCESSING DELETION OF %s DP_ID %d" % (model_dp.filename, model_dp.dp_id))
         try:
             if wait_model_dp_ready(model_dp) is None:
                 if model_dp.options['readings'] == LEN_EVENTPOOL and model_dp.options['cached']:

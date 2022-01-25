@@ -60,9 +60,10 @@ def save_flat_samples(flat_samples):
 if __name__ == '__main__':
     conf_params = wp.ThisJob.config.parameters
     SUBMISSION_TYPE = conf_params['walkers_submission_type']
-    MASTER_CACHE = wp.ThisJob.child_event(name='start_cache')
+    MASTER_CACHE = wp.ThisJob.child_event(name='start_cache',
+                                          options={'currently_caching': False})
     MASTER_CACHE.fire()
-    EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), name='start_walker',
+    EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), MASTER_CACHE, name='start_walker',
                           options={} if SUBMISSION_TYPE is None
                           else {'submission_type': SUBMISSION_TYPE, 'job_time': 40,
                                 'walltime': str(conf_params['walltime']),
