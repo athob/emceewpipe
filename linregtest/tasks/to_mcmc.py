@@ -8,7 +8,9 @@ import numpy as np
 import pandas as pd
 from scipy import linalg, spatial
 
-import data_model_utils as dmu
+
+if __name__ == '__main__':
+    import data_model_utils as dmu
 
 
 def register(task):
