@@ -8,8 +8,11 @@ DATA_X = DATA_Y = DATA_YERR = None
 
 
 def get_data():
-    raw_dp = wp.ThisJob.config.rawdataproducts[0]
-    data = pd.read_csv(raw_dp.path)
+    try:
+        raw_dp = wp.ThisJob.config.rawdataproducts[0]
+        data = pd.read_csv(raw_dp.path)
+    except AttributeError:
+        data = {'x': None, 'y': None, 'yerr': None}
     return data
 
 
