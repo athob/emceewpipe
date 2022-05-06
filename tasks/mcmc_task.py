@@ -73,7 +73,7 @@ if __name__ == '__main__':
         EP_OPTIONS['job_time'] = 40
         EP_OPTIONS['walltime'] = str(conf_params['walltime'])
         EP_OPTIONS['job_openmp'] = bool(conf_params['job_openmp'])
-        if NODE_MODEL is not None
+        if NODE_MODEL is not None:
             EP_OPTIONS['node_model'] = NODE_MODEL
     MASTER_CACHE = wp.ThisJob.child_event(name='start_cache',
                                           options={'currently_caching': False})
