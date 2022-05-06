@@ -63,14 +63,23 @@ if __name__ == '__main__':
         SUBMISSION_TYPE = conf_params['walkers_submission_type']
     except KeyError:
         SUBMISSION_TYPE = None
+    try:
+        NODE_MODEL = str(conf_params['node_model'])
+    except KeyError:
+        NODE_MODEL = None
+    EP_OPTIONS = {}
+    if SUBMISSION_TYPE is not None:
+        EP_OPTIONS['submission_type'] = SUBMISSION_TYPE
+        EP_OPTIONS['job_time'] = 40
+        EP_OPTIONS['walltime'] = str(conf_params['walltime'])
+        EP_OPTIONS['job_openmp'] = bool(conf_params['job_openmp'])
+        if NODE_MODEL is not None
+            EP_OPTIONS['node_model'] = NODE_MODEL
     MASTER_CACHE = wp.ThisJob.child_event(name='start_cache',
                                           options={'currently_caching': False})
     MASTER_CACHE.fire()
     EVENTPOOL = EventPool(wp.ThisJob, int(conf_params['len_eventpool']), MASTER_CACHE, name='start_walker',
-                          options={} if SUBMISSION_TYPE is None
-                          else {'submission_type': SUBMISSION_TYPE, 'job_time': 40,
-                                'walltime': str(conf_params['walltime']),
-                                'job_openmp': bool(conf_params['job_openmp'])})
+                          options=EP_OPTIONS)
     EVENTPOOL.fire()
     SAMPLER = run_mcmc(EVENTPOOL)
     EVENTPOOL.kill()
