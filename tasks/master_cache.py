@@ -15,12 +15,9 @@ CACHE_SLEEP = 60
 
 
 def read_cat_and_cache(cache_dp):
-    cache_dp.options['ready'] = False
     wp.ThisEvent.options['currently_caching'] = True
-    models = update_models()
-    models.to_csv(cache_dp.path)
+    models = update_models(cache_dp_to_update=cache_dp)
     wp.ThisEvent.options['currently_caching'] = False
-    cache_dp.options['ready'] = True
     return
 
 
@@ -33,8 +30,10 @@ def check_for_stop():
 
 def main_loop():
     cache_dp = create_cache_dp()
+    temp_time = time.time()-CACHE_SLEEP
     while not check_for_stop():
-        time.sleep(CACHE_SLEEP)
+        time.sleep((lambda x: (abs(x)+x)/2)(temp_time+CACHE_SLEEP-time.time()))
+        temp_time = time.time()
         read_cat_and_cache(cache_dp)
         delete_cached_models()
 

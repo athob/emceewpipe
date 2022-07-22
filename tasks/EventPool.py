@@ -71,7 +71,7 @@ class EventPool:
                                 if datetime.datetime.utcnow() - _starttime > self._walltime + WALLTIME_MARGIN:
                                     _current_dpid = _event.options['current_dpid']
                                     if _current_dpid is not None:
-                                        while self._caching_event['currently_caching']:
+                                        while self._caching_event.options['currently_caching']:
                                             time.sleep(1)
                                         wp.DataProduct(int(_current_dpid)).delete()
                                     _job.expire()

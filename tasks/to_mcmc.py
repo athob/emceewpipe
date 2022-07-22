@@ -12,7 +12,7 @@ from scipy import linalg, spatial
 
 if __name__ == '__main__':
     import data_model_utils as dmu
-    from ModelCaching import return_models, update_models, create_model_dp
+    from ModelCaching import return_models, update_models, append_to_dp, create_model_dp
 
 
 def register(task):
@@ -64,11 +64,9 @@ def comput_model(*args):
     wp.ThisJob.firing_event.options['current_dpid'] = model_dp.dp_id
     new_model = dmu.model(*args)
     args_tags = ['a%d' % i for i in range(len(args))]
-    # pd.DataFrame([[model_dp.filename]+list(args)], columns=['name']+args_tags).join(
-    pd.DataFrame([[model_dp.dp_id]+list(args)], columns=['dp_id']+args_tags).join(
+    append_to_dp(pd.DataFrame([[model_dp.dp_id]+list(args)], columns=['dp_id']+args_tags).join(
         pd.DataFrame([np.array(new_model)], columns=dmu.MODEL_X)).set_index(  # TODO is that MODEL_X needed?
-        args_tags).to_csv(model_dp.path)
-    model_dp.options['ready'] = True
+        args_tags), model_dp)
     wp.ThisJob.firing_event.options['current_dpid'] = None
     return new_model
 
