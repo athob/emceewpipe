@@ -13,8 +13,8 @@ def register(task):
     _temp = task.mask(source='*', name='start_cache', value='*')
 
 
-CACHE_SLEEP = 30
-REBASE_CYCLE = 300
+CACHE_SLEEP = 60
+REBASE_CYCLE = 3600
 
 
 def check_for_stop():
