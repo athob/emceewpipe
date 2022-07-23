@@ -61,6 +61,12 @@ def read_model_dp(model_dp):
     return model
 
 
+def compare_model_dps(model_dp1, model_dp2):
+    model1 = read_model_dp(model_dp1)
+    model2 = read_model_dp(model_dp2)
+    return model1.equals(model2)
+
+
 def create_model_dp(args):
     model_dp = wp.ThisJob.config.dataproduct(filename=('M' + len(args) * '_%.10e' + DATA_EXT) % args,
                                              relativepath=wp.ThisJob.config.procpath,
@@ -80,6 +86,22 @@ def create_cache_dp():
     return cache_dp
 
 
+def create_backup_dp():
+    backup_dp = wp.ThisJob.config.dataproduct(filename="Cache_backup" + DATA_EXT,
+                                              relativepath=wp.ThisJob.config.procpath,
+                                              group='proc',
+                                              data_type='Backup')
+    return backup_dp
+
+
+def create_repacked_dp():
+    repacked_dp = wp.ThisJob.config.dataproduct(filename="Cache_repacked" + DATA_EXT,
+                                                relativepath=wp.ThisJob.config.procpath,
+                                                group='proc',
+                                                data_type='Repack')
+    return repacked_dp
+
+
 def get_cache_dp():
     cache_dp = wp.DataProduct.select(dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Cache')[0]
     return cache_dp
@@ -92,7 +114,7 @@ else:
         wp.ThisJob.logprint('ATTEMPTING LOADING CACHE DATAPRODUCT')
         EXISTING_MODELS = read_model_dp(get_cache_dp())
         wp.ThisJob.logprint('CACHE DATAPRODUCT LOADED')
-    except (OSError, IndexError, AttributeError):
+    except (OSError, KeyError, IndexError, AttributeError):
         EXISTING_MODELS = pd.DataFrame()
 
 
