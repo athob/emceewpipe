@@ -145,14 +145,14 @@ def append_to_dp(models, dp):
 def update_models(cache_dp_to_update=None):
     global EXISTING_MODELS
     wp.ThisJob.logprint("UPDATING MODELS: current EXISTING_MODELS.shape = %s" % repr(EXISTING_MODELS.shape))
-    wp.ThisJob.logprint("                         EXISTING_MODELS.columns = %s" % repr(EXISTING_MODELS.columns.to_list()))
+    # wp.ThisJob.logprint("                         EXISTING_MODELS.columns = %s" % repr(EXISTING_MODELS.columns.to_list()))
     dp_ids = list(EXISTING_MODELS['dp_id']) if len(EXISTING_MODELS) else []
     proc_dps = wp.DataProduct.select(wp.si.DataProduct.id.not_in(dp_ids),
                                      dpowner_id=wp.ThisJob.config_id, group='proc', data_type='Model')
     _temp = load_models(proc_dps)
-    wp.ThisJob.logprint("CONCATENATING DATAFRAME:\n %s" % repr(_temp))
+    wp.ThisJob.logprint("CONCATENATING DATAFRAME.shape = %s" % repr(_temp.shape))
     EXISTING_MODELS = pd.concat([EXISTING_MODELS, _temp])
-    if cache_dp_to_update is not None:
+    if cache_dp_to_update is not None and not _temp.empty:
         append_to_dp([_temp, EXISTING_MODELS][DATA_EXT == '.csv'], cache_dp_to_update)
     return EXISTING_MODELS
 

@@ -48,14 +48,14 @@ class EventPool:
     def map(self, func, struct):  # TODO: struct is actually a generator, think about a more suitable implementation
         struct = list(struct)
         struct_length = len(list(struct))
-        # wp.ThisJob.logprint('\nSTART MAP LENGTH\t'+repr(struct_length)+'\n'+repr(np.array(struct)))
+        # wp.ThisJob.logprint('START MAP LENGTH\t'+repr(struct_length)+'\n'+repr(np.array(struct)))
         pool_length = len(self._events)
         output = np.nan * np.empty(struct_length)
         pool_indexes = dict(zip(range(pool_length), pool_length * [-1]))
         n = 0
         m = 0
         while m < struct_length or pool_indexes:
-            wp.ThisJob.logprint('\nSTRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
+            wp.ThisJob.logprint('STRUCT\t'+repr(m)+'\t'+repr(pool_indexes))
             # looping around the pool to find available event
             while not (self._events[n].options['new_log_prob']) if (n in pool_indexes.keys()) else True:
                 # management to this loop to restart expired events
@@ -101,7 +101,7 @@ class EventPool:
                 wp.ThisJob.logprint('DELETING\t'+repr(n))
                 del pool_indexes[n]
                 self._events[n].options['new_log_prob'] = True
-        # wp.ThisJob.logprint('\nRETURN\n'+repr(output))
+        # wp.ThisJob.logprint('RETURN\n'+repr(output))
         # for n in range(pool_length):
         #     self._events[n].options['new_log_prob'] = True
         return output
