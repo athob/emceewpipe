@@ -32,6 +32,9 @@ def kernel(u):
 def make_new_model(*args):
     wp.ThisJob.logprint("ENTERING MAKE_NEW_MODEL")
     models = update_models()
+    # CLEAR CACHE, bit of a clumsy fix there...
+    wp.DataProduct.__cache__.drop(wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'").index, inplace=True)
+    # -----------------------------------------
     if len(models):
         deviations = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
         distances = linalg.norm(deviations, axis=1)
@@ -59,7 +62,7 @@ def make_new_model(*args):
 
 
 def comput_model(*args):
-    wp.ThisJob.logprint('\nMAKE NEW MODEL\n')
+    wp.ThisJob.logprint('MAKE NEW MODEL')
     model_dp = create_model_dp(args)
     wp.ThisJob.firing_event.options['current_dpid'] = model_dp.dp_id
     new_model = dmu.model(*args)
