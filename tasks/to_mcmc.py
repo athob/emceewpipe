@@ -32,13 +32,19 @@ def kernel(u):
 
 def make_new_model(*args):
     wp.ThisJob.logprint("ENTERING MAKE_NEW_MODEL")
+    wp.ThisJob.logprint(f"len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(f"DataProduct.__cache__.shape = {len(wp.DataProduct.__cache__.shape)}")
     models = update_models()
     # CLEAR CACHE, bit of a clumsy fix there...
+    wp.ThisJob.logprint(f"Before clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(f"Before clear DataProduct.__cache__.shape = {len(wp.DataProduct.__cache__.shape)}")
     _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'")
     wp.si.INSTANCES = list(set(wp.si.INSTANCES)-{dp._dataproduct for dp in _temp.dataproduct})
     wp.DataProduct.__cache__.drop(_temp.index, inplace=True)
     del _temp
     gc.collect()
+    wp.ThisJob.logprint(f"After clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(f"After clear DataProduct.__cache__.shape = {len(wp.DataProduct.__cache__.shape)}")
     # -----------------------------------------
     if len(models):
         deviations = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
