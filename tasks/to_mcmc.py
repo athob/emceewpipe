@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import gc
 import inspect
 import copy
 import time
@@ -33,7 +34,11 @@ def make_new_model(*args):
     wp.ThisJob.logprint("ENTERING MAKE_NEW_MODEL")
     models = update_models()
     # CLEAR CACHE, bit of a clumsy fix there...
-    wp.DataProduct.__cache__.drop(wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'").index, inplace=True)
+    _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'")
+    wp.si.INSTANCES = list(set(wp.si.INSTANCES)-{dp._dataproduct for dp in _temp.dataproduct})
+    wp.DataProduct.__cache__.drop(_temp.index, inplace=True)
+    del _temp
+    gc.collect()
     # -----------------------------------------
     if len(models):
         deviations = (np.array(models.index.to_list()) - args) / dmu.CHARA_LENGTHS
@@ -83,7 +88,7 @@ class InModelLibrary(Exception):
 
 
 def interp_model(*args):
-    wp.ThisJob.logprint('\nINTERPOLATE MODEL\n')
+    wp.ThisJob.logprint('INTERPOLATE MODEL')
     global EXISTING_VORONOI
     # models = EXISTING_MODELS.drop('name', axis=1)
     models = return_models().drop('dp_id', axis=1)
