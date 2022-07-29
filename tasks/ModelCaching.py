@@ -132,13 +132,20 @@ def append_to_dp(models, dp):
     while os.path.exists(path) and not dp.options['ready']:
         time.sleep(1)
     dp.options['ready'] = False
-    if DATA_EXT == '.csv':
-        models.to_csv(path)
-    elif DATA_EXT == '.h5':
-        with pd.HDFStore(dp.path) as HDF5:
-            HDF5.append('data', models)
-    else:
-        raise ValueError("Wrong DATA_EXT")
+    for retry in tn.Retrying(
+            retry=(tn.retry_if_exception_type(FileNotFoundError) | tn.retry_if_exception_type(tables.exceptions.HDF5ExtError)),
+            after=lambda retry_state:
+            wp.ThisJob.logprint("Failed first reading attempt of %s; entering retrying loop" % dp.path)
+            if retry_state.attempt_number == 1 else None,
+            wait=tn.wait_random()):
+        with retry:
+            if DATA_EXT == '.csv':
+                models.to_csv(path)
+            elif DATA_EXT == '.h5':
+                with pd.HDFStore(dp.path) as HDF5:
+                    HDF5.append('data', models)
+            else:
+                raise ValueError("Wrong DATA_EXT")
     dp.options['ready'] = True
 
 

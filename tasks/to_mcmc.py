@@ -41,9 +41,14 @@ def make_new_model(*args):
     wp.ThisJob.logprint(' '.join(["Before clear"]+[f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
     wp.ThisJob.logprint(f"Before clear DataProduct.__cache__.shape = {wp.DataProduct.__cache__.shape}")
     _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'")
+    # Clear options
+    _options = pd.DataFrame([tuple(opt._sa_instance_state.dict[k] for k in ['optowner_id', 'id'])+(opt,) for opt in wp.si.INSTANCES if isinstance(opt, wp.si.Option)], columns=['own_id', 'id', 'opt']).query("own_id in @_temp.dp_id").drop(columns='own_id')
+    wp.si.INSTANCES = set(wp.si.INSTANCES)-set(_options.opt)
+    wp.Option.__cache__.drop(wp.Option.__cache__.query("option_id in @_options.id").index, inplace=True)
+    # Clear dataproducts
     wp.si.INSTANCES = list(set(wp.si.INSTANCES)-{dp._dataproduct for dp in _temp.dataproduct})
     wp.DataProduct.__cache__.drop(_temp.index, inplace=True)
-    del _temp
+    del _options, _temp
     gc.collect()
     wp.ThisJob.logprint(f"After clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
     wp.ThisJob.logprint(' '.join(["After clear"]+[f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
