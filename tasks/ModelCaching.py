@@ -178,10 +178,10 @@ def update_models(cache_dp_to_update=None):
         wp.ThisJob.logprint(f"Before clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
         wp.ThisJob.logprint(' '.join(["Before clear"]+[f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
         wp.ThisJob.logprint(f"Before clear DataProduct.__cache__.shape = {wp.DataProduct.__cache__.shape}")
+        _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename.str.contains('M_')", engine='python')
         _tmp_opt = wp.Option.select(wp.si.Option.optowner_id.in_(_temp.dp_id))
         _tmp_opt = wp.Option.__cache__.query("optowner_id in @_temp.dp_id")
-        _temp = wp.DataProduct.__cache__.query('dp_id in @_temp.dp_id')
-        # _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'")
+        # _temp = wp.DataProduct.__cache__.query('dp_id in @_temp.dp_id')
         # _options = pd.DataFrame(
         #     [tuple(opt._sa_instance_state.dict[k] for k in ['optowner_id', 'id'])+(opt,)
         #      for opt in wp.si.INSTANCES if 'id' in opt._sa_instance_state.dict.keys() and isinstance(opt, wp.si.Option)],
