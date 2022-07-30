@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import os
 import sys
+import gc
 import time
 import tenacity as tn
 import wpipe as wp
+import numpy as np
 import pandas as pd
 import tables
 
@@ -151,6 +153,13 @@ def append_to_dp(models, dp):
 
 def update_models(cache_dp_to_update=None):
     global EXISTING_MODELS
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+    wp.ThisJob.logprint(f"len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(' '.join([f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
+    wp.ThisJob.logprint(f"DataProduct.__cache__.shape = {wp.DataProduct.__cache__.shape}")
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     wp.ThisJob.logprint("UPDATING MODELS: current EXISTING_MODELS.shape = %s" % repr(EXISTING_MODELS.shape))
     # wp.ThisJob.logprint("                         EXISTING_MODELS.columns = %s" % repr(EXISTING_MODELS.columns.to_list()))
     dp_ids = list(EXISTING_MODELS['dp_id']) if len(EXISTING_MODELS) else []
@@ -161,6 +170,36 @@ def update_models(cache_dp_to_update=None):
     EXISTING_MODELS = pd.concat([EXISTING_MODELS, _temp])
     if cache_dp_to_update is not None and not _temp.empty:
         append_to_dp([_temp, EXISTING_MODELS][DATA_EXT == '.csv'], cache_dp_to_update)
+    # ----------------------------------------------------------------------------------
+    # CLEAR CACHE, bit of a clumsy fix there...-----------------------------------------
+    # ----------------------------------------------------------------------------------
+    del proc_dps
+    wp.ThisJob.logprint(f"Before clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(' '.join(["Before clear"]+[f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
+    wp.ThisJob.logprint(f"Before clear DataProduct.__cache__.shape = {wp.DataProduct.__cache__.shape}")
+    _tmp_opt = wp.Option.select(wp.si.Option.optowner_id.in_(_temp.dp_id))
+    _tmp_opt = wp.Option.__cache__.query("optowner_id in @_temp.dp_id")
+    _temp = wp.DataProduct.__cache__.query('dp_id in @_temp.dp_id')
+    # _temp = wp.DataProduct.__cache__.groupby('group').get_group('proc').query("filename != 'Cache.h5'")
+    # _options = pd.DataFrame(
+    #     [tuple(opt._sa_instance_state.dict[k] for k in ['optowner_id', 'id'])+(opt,)
+    #      for opt in wp.si.INSTANCES if 'id' in opt._sa_instance_state.dict.keys() and isinstance(opt, wp.si.Option)],
+    #      columns=['own_id', 'id', 'opt']).query("own_id in @_temp.dp_id").drop(columns='own_id')
+    # wp.si.INSTANCES = list(set(wp.si.INSTANCES)-set(_options.opt)-{opt._option for opt in _tmp_opt.option})
+    # wp.si.INSTANCES = list(set(wp.si.INSTANCES)-{dp._dataproduct for dp in _temp.dataproduct})
+    wp.si.INSTANCES = list(set(wp.si.INSTANCES)-{dp._dataproduct for dp in _temp.dataproduct}-{opt._option for opt in _tmp_opt.option})
+    wp.Option.__cache__.drop(_tmp_opt.index, inplace=True)
+    # wp.Option.__cache__.drop(wp.Option.__cache__.query("option_id in @_options.id").index, inplace=True)
+    wp.DataProduct.__cache__.drop(_temp.index, inplace=True)
+    # del _tmp_opt, _options, _temp
+    del _tmp_opt, _temp
+    gc.collect()
+    wp.ThisJob.logprint(f"After clear len(INSTANCES) = {len(wp.si.INSTANCES)}")
+    wp.ThisJob.logprint(' '.join(["After clear"]+[f"{n}x{t[:5]}" for t,n in zip(*np.unique(list(map(lambda I: type(I).__name__,wp.si.INSTANCES)), return_counts=True))]))
+    wp.ThisJob.logprint(f"After clear DataProduct.__cache__.shape = {wp.DataProduct.__cache__.shape}")
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     return EXISTING_MODELS
 
 
