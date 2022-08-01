@@ -5,7 +5,7 @@ import subprocess
 import wpipe as wp
 
 if __name__ == '__main__':
-    from ModelCaching import update_models, compare_model_dps, create_cache_dp, create_backup_dp, create_repacked_dp, delete_cached_models
+    from ModelCaching import update_models, compare_model_dps, create_cache_dp, create_backup_dp, create_repacked_dp, delete_cached_models  # , clear_model_dp_from_wpipe_cache
 
 
 def register(task):
@@ -49,6 +49,7 @@ def main_loop():
         models = update_models(cache_dp_to_update=cache_dp)
         wp.ThisEvent.options['currently_caching'] = False
         delete_cached_models()
+        # clear_model_dp_from_wpipe_cache()
 
 
 # Press the green button in the gutter to run the script.

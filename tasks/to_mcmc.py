@@ -13,7 +13,7 @@ from scipy import linalg, spatial
 
 if __name__ == '__main__':
     import data_model_utils as dmu
-    from ModelCaching import return_models, update_models, append_to_dp, create_model_dp
+    from ModelCaching import return_models, update_models, append_to_dp, create_model_dp, clear_model_dp_from_wpipe_cache
 
 
 def register(task):
@@ -243,6 +243,7 @@ def listen_send_and_stop():
     while not check_for_stop():
         theta = listen_for_theta()
         send_to_mcmc(theta)
+        clear_model_dp_from_wpipe_cache()
 
 
 # Press the green button in the gutter to run the script.
