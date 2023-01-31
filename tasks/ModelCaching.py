@@ -151,7 +151,7 @@ def append_to_dp(models, dp):
     dp.options['ready'] = True
 
 
-def update_models(cache_dp_to_update=None):
+def update_models(cache_dp_to_update=None, initial=False):
     global EXISTING_MODELS
     # ----------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def update_models(cache_dp_to_update=None):
     _temp = load_models(proc_dps)
     wp.ThisJob.logprint("CONCATENATING DATAFRAME.shape = %s" % repr(_temp.shape))
     EXISTING_MODELS = pd.concat([EXISTING_MODELS, _temp])
-    if cache_dp_to_update is not None and not _temp.empty:
+    if cache_dp_to_update is not None and ((not _temp.empty) or initial):
         append_to_dp([_temp, EXISTING_MODELS][DATA_EXT == '.csv'], cache_dp_to_update)
     return EXISTING_MODELS
 

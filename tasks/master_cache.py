@@ -36,6 +36,7 @@ def backup_and_repack(cache_dp, backup_dp):
 
 def main_loop():
     cache_dp = create_cache_dp()
+    models = update_models(cache_dp_to_update=cache_dp, initial=True)
     backup_dp = create_backup_dp()
     last_repacking = time.time()
     last_caching = last_repacking - CACHE_SLEEP
