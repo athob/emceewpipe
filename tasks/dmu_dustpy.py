@@ -7,7 +7,10 @@ import sys
 import numpy as np
 import wpipe as wp
 from astropy import units, table
+from astroquery.simbad import Simbad
 from dustpy import SynDustPy
+
+Simbad.add_votable_fields('distance', 'z_value')
 
 LABELS = ["$T_{star}$", "$\\tau$", "$f_{T}$"]
 CHARA_LENGTHS = [50, 0.05, 0.005]
@@ -15,14 +18,18 @@ DATA = None
 MODEL_X = None
 NB_DIM = len(LABELS)
 
-DISTANCE = 778 * units.kpc
-REDSHIFT = -0.001001
+# Currently set to assume target is in M31 Andromeda
+OBJECT = Simbad.query_object('M31')
+DISTANCE = OBJECT['Distance_distance'][0] * units.Unit(OBJECT['Distance_unit'][0])  # 778 * units.kpc
+REDSHIFT = OBJECT['Z_VALUE'][0]  # -0.001001
 
 LAMBDA_UNIT = units.micron
 IRRADI_UNIT = units.Unit('erg/(cm2 s)')
 
 FILTER_IDS = ['Spitzer/IRAC.I1', 'Spitzer/IRAC.I2', 'Spitzer/IRAC.I3', 'Spitzer/IRAC.I4', 'Spitzer/MIPS.24mu']
-FILTER_IDS += ['HST/ACS_WFC.F435W', 'HST/ACS_WFC.F606W', 'HST/ACS_WFC.F814W', 'HST/WFC3_IR.F110W', 'HST/WFC3_IR.F160W']
+# FILTER_IDS += ['HST/ACS_WFC.F435W', 'HST/ACS_WFC.F606W', 'HST/ACS_WFC.F814W', 'HST/WFC3_IR.F110W', 'HST/WFC3_IR.F160W']
+FILTER_IDS += ['HST/WFC3_UVIS1.F275W', 'HST/WFC3_UVIS1.F336W', 'HST/ACS_WFC.F475W', 'HST/ACS_WFC.F814W', 'HST/WFC3_IR.F110W', 'HST/WFC3_IR.F160W']
+# PHAT bands are F275W, F336W, F475W, F814W, F110W, and F160W
 
 T_STAR_MIN = 2500.
 T_STAR_MAX = 25000.
@@ -54,7 +61,7 @@ def convert_theta(theta):
 def prepare_syndustpy(filter_ids=None):
     # TODO: SHOULD GRAB HERE SDP PARAMETERS FROM CONFIG
     if filter_ids is None:
-        filter_ids = FILTER_IDS
+        filter_ids = wp.ThisJob.config.parameters['filter_ids']  # FILTER_IDS
     return SynDustPy(filterids=filter_ids, distance=DISTANCE, src_redshift=REDSHIFT)
 
 
