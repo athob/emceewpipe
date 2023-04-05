@@ -16,4 +16,4 @@ if __name__ == '__main__':
             my_target = my_input.target(name=my_dp.filesplitext[0])
             for my_conf in my_target.configurations:
                 my_job.logprint("Starting target "+my_target.name+" config "+my_conf.name)
-                my_job.child_event('run_mcmc', options={'config_id': my_conf.config_id}).fire()
+                my_job.child_event('run_target', options={'config_id': my_conf.config_id}).fire()
